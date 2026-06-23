@@ -45,6 +45,23 @@ async function loadUserData() {
     // ডাইনামিক রেফারেল লিংক জেনারেশন (আপনার মিনি অ্যাপের ইনপুট বক্সে লিংকটি সেটআপ করা হলো)
     document.getElementById("referral-link").value = `https://t.me/GlobalMintbot?start=ref_${tg_id}`;
 
+    // রেফারেল তালিকা রিয়েল-টাইমে টেবিল আকারে রেন্ডার করা হলো
+    const refTableBody = document.getElementById("referrals-table-body");
+    if (data.referral_list && data.referral_list.length > 0) {
+      refTableBody.innerHTML = ""; // আগের ডামি নোটিশ ডিলিট
+      data.referral_list.forEach((ref) => {
+        const name = ref.username ? `@${ref.username}` : ref.first_name;
+        const earned = parseFloat(ref.balance).toFixed(2);
+        refTableBody.innerHTML += `
+          <tr>
+            <td>${name}</td>
+            <td>$${earned}</td>
+            <td><span class="badge" style="background-color: var(--success);">Active</span></td>
+          </tr>`;
+      });
+    } else {
+      refTableBody.innerHTML = `<tr><td colspan="3" class="empty-msg">No referrals yet. Invite friends to grow!</td></tr>`;
+    }
     // পেমেন্ট প্রোফাইল ডেটা পপুলেট
     if (data.user.payment_details) {
       savedPaymentProfileData = JSON.parse(data.user.payment_details);
