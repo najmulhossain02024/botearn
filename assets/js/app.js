@@ -42,6 +42,9 @@ async function loadUserData() {
     document.getElementById("ad-count-text").innerText = `${adsClaimed}/50`;
     document.getElementById("ad-action-label").innerText = getAdLabel(adsClaimed);
 
+    // ডাইনামিক রেফারেল লিংক জেনারেশন (আপনার মিনি অ্যাপের ইনপুট বক্সে লিংকটি সেটআপ করা হলো)
+    document.getElementById("referral-link").value = `https://t.me/GlobalMintbot?start=ref_${tg_id}`;
+
     // পেমেন্ট প্রোফাইল ডেটা পপুলেট
     if (data.user.payment_details) {
       savedPaymentProfileData = JSON.parse(data.user.payment_details);
@@ -60,7 +63,7 @@ async function claimDailyBonus() {
     alert(response.message);
     loadUserData();
   } catch (e) {
-    // Error notification handled by apiRequest helper
+    // Error handled by apiRequest helper
   }
 }
 
