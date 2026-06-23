@@ -1,1 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GlobalMint - Earn Bot</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  
+  <!-- Monetag SDK Telegram Mini App -->
+  <script src='//libtl.com/sdk.js' data-zone='11190428' data-sdk='show_11190428'></script>
+</head>
+<body>
 
+  <!-- টপ ফিক্সড হেডার প্রোফাইল -->
+  <header class="app-header">
+    <div class="profile-info">
+      <div class="avatar" id="user-avatar">G</div>
+      <div class="profile-text">
+        <span class="user-name" id="header-name">Loading...</span>
+        <span class="user-id" id="header-id">ID: 000000000</span>
+      </div>
+    </div>
+    <div class="balance-container">
+      <div class="balance-box">
+        <small>Main Balance</small>
+        <span class="amount">$<span id="main-balance">0.0000</span></span>
+      </div>
+      <div class="balance-box pending">
+        <small>Pending</small>
+        <span class="amount">$<span id="pending-balance">0.0000</span></span>
+      </div>
+    </div>
+    <button class="rules-btn" onclick="openRules()">📖 Rules</button>
+  </header>
+
+  <!-- প্রধান অ্যাপ স্ক্রিন কন্টেইনারসমূহ -->
+  <main class="app-body">
+    
+    <!-- ১. ড্যাশবোর্ড স্ক্রিন (Dashboard Home) -->
+    <section id="screen-dashboard" class="app-screen active">
+      <div class="promo-card">
+        <h3>🚀 Daily Bonus claim</h3>
+        <p>Claim your daily check-in bonus of $0.10 once every 24 hours.</p>
+        <button class="claim-btn" id="btn-daily-bonus" onclick="claimDailyBonus()">Claim $0.10</button>
+      </div>
+
+      <div class="user-stats-grid">
+        <div class="stat-card">
+          <h4>Total Referrals</h4>
+          <span class="stat-val" id="stat-ref-count">0</span>
+        </div>
+        <div class="stat-card">
+          <h4>Referral Earnings</h4>
+          <span class="stat-val" id="stat-ref-earnings">$0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ২. আর্নিং স্ক্রিন (Earning Tasks) -->
+    <section id="screen-earning" class="app-screen">
+      <!-- US VPN Warning Message -->
+      <div class="vpn-warning">
+        ⚠️ <strong>Notice:</strong> Use a high-quality <strong>US VPN</strong> to perform Task 2 (VIP Task) for premium ads and higher task approval rates!
+      </div>
+
+      <!-- টাস্ক ১: মনিট্যাগ অ্যাডস (Task 1) -->
+      <div class="task-box monetag-ad-box">
+        <div class="task-header">
+          <span class="badge">Task 1</span>
+          <h3>Monetag Video Ad</h3>
+        </div>
+        <p>Earn progressively from ads. Watch up to 50 ads daily with a 2-minute cooldown. Complete all 50 ads to get a <strong>$0.50</strong> extra bonus!</p>
+        
+        <div class="ad-progress">
+          <span>Ad Viewed Today: <strong id="ad-count-text">0/50</strong></span>
+        </div>
+
+        <div class="ad-trigger-section">
+          <span class="ad-label" id="ad-action-label">Watch Now</span>
+          <button class="action-btn" id="btn-watch-ad" onclick="triggerMonetagAd()">Claim</button>
+          <div id="ad-cooldown-timer" class="cooldown-timer hidden">Next Ad in 02:00</div>
+        </div>
+      </div>
+
+      <!-- টাস্ক ২ এবং টাস্ক ৩ কন্টেইনার লিস্ট -->
+      <div class="task-list-container">
+        <h3>🔥 VIP Tasks (Task 2)</h3>
+        <div id="vip-tasks-list" class="task-list-box">
+          <p class="empty-msg">Fetching tasks...</p>
+        </div>
+      </div>
+
+      <div class="task-list-container" style="margin-top: 20px;">
+        <h3>🔗 Code Verification Tasks (Task 3)</h3>
+        <div id="code-tasks-list" class="task-list-box">
+          <p class="empty-msg">Fetching tasks...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ৩. রেফারেল স্ক্রিন (Referrals) -->
+    <section id="screen-refer" class="app-screen">
+      <div class="referral-box">
+        <h3>Invite Friends & Earn</h3>
+        <p>Invite friends via your personal link and get <strong>$0.50</strong> instantly. When your referred friend reaches <strong>$100</strong> in earnings, you get an extra <strong>$5.00</strong> milestone bonus!</p>
+        <div class="link-copy-container">
+          <input type="text" id="referral-link" readonly value="https://t.me/GlobalMintbot?start=ref_0">
+          <button onclick="copyReferralLink()">Copy</button>
+        </div>
+      </div>
+
+      <div class="referral-list-section">
+        <h3>Your Referral List</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Username/Name</th>
+                <th>Earned</th>
+                <th>Invited</th>
+              </tr>
+            </thead>
+            <tbody id="referrals-table-body">
+              <tr>
+                <td colspan="3" class="empty-msg">No referrals yet. Invite friends to grow!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ৪. অ্যাকাউন্ট স্ক্রিন (Payment Profile Setup) -->
+    <section id="screen-account" class="app-screen">
+      <div class="form-container">
+        <h3>💳 Payment Profile Settings</h3>
+        <p>Save your payment details below to auto-fill them during withdrawals.</p>
+        
+        <label for="payment-gateway">Select Payment Gateway</label>
+        <select id="payment-gateway" onchange="togglePaymentFields()">
+          <option value="bkash">bKash (Personal)</option>
+          <option value="nagad">Nagad (Personal)</option>
+          <option value="rocket">Rocket (Personal)</option>
+          <option value="upay">uPay (Personal)</option>
+          <option value="paypal">Paypal (Email)</option>
+          <option value="paytm">Paytm (Wallet)</option>
+          <option value="googlepay">Google Pay (UPI)</option>
+          <option value="usdt">USDT (TRC20 Wallet)</option>
+          <option value="bank">International Bank Account</option>
+        </select>
+
+        <!-- ডাইনামিক ফিল্ড কন্টেইনারস -->
+        <div id="dynamic-payment-fields">
+          <!-- Default field (Bkash/Nagad) -->
+          <div class="field-group" id="group-phone">
+            <label id="phone-label">Personal Mobile Number</label>
+            <input type="number" id="pay-phone" placeholder="e.g. 017XXXXXXXX">
+          </div>
+          
+          <div class="field-group hidden" id="group-email">
+            <label>Paypal Account Email</label>
+            <input type="email" id="pay-email" placeholder="example@paypal.com">
+          </div>
+
+          <div class="field-group hidden" id="group-crypto">
+            <label>USDT TRC20 Wallet Address</label>
+            <input type="text" id="pay-crypto" placeholder="T...</">
+          </div>
+
+          <div class="field-group hidden" id="group-bank">
+            <label>Bank Name & Branch</label>
+            <input type="text" id="pay-bank-name" placeholder="Bank Name, Branch Name">
+            <label>Account Number</label>
+            <input type="text" id="pay-bank-acc" placeholder="Account Number">
+            <label>Routing / SWIFT Code</label>
+            <input type="text" id="pay-bank-swift" placeholder="Routing or SWIFT Code">
+            <label>Account Holder Full Name</label>
+            <input type="text" id="pay-bank-holder" placeholder="Full Name as in Bank">
+          </div>
+        </div>
+
+        <button class="save-btn" onclick="savePaymentProfile()">💾 Save Profile</button>
+      </div>
+    </section>
+
+    <!-- ৫. উইথড্র স্ক্রিন (Withdraw Balance) -->
+    <section id="screen-withdraw" class="app-screen">
+      <div class="form-container">
+        <h3>💸 Withdraw Funds</h3>
+        <p>Minimum withdraw amount is <strong>$30</strong>. Select your saved gateway details to request payout.</p>
+
+        <label for="withdraw-amount">Amount to Withdraw ($)</label>
+        <input type="number" id="withdraw-amount" placeholder="Minimum $30" min="30">
+
+        <label>Selected Gateway Info</label>
+        <div class="saved-info-preview" id="withdraw-info-preview">
+          Payment method profile is not set up yet. Go to Account tab to save profile.
+        </div>
+
+        <button class="claim-btn" id="btn-submit-withdraw" onclick="submitWithdrawal()" style="width:100%; margin-top:15px;">Send Payout Request</button>
+      </div>
+
+      <div class="history-section">
+        <h3>Withdrawal History</h3>
+        <div id="withdrawal-history-list">
+          <p class="empty-msg">No withdrawals made yet.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- টাস্ক সাবমিশন মোডাল (টাস্ক ২ এবং ৩ ডিটেইলস পপআপ) -->
+  <div id="task-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-task-title">Task Submission</h3>
+        <button class="close-btn" onclick="closeTaskModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-task-desc">Complete the instruction and submit proof.</p>
+        
+        <div id="modal-cooldown-timer" class="cooldown-timer hidden">Time remaining: 00s</div>
+        
+        <a id="modal-task-link" href="#" target="_blank" class="task-link-btn" onclick="startTaskCounter()">🔗 Visit Task Link</a>
+
+        <!-- ডাইনামিক প্রুফ ফরম -->
+        <div id="modal-proof-area" class="proof-container">
+          <!-- VIP স্ক্রিনশট আপলোড -->
+          <div id="proof-screenshot-block" class="hidden">
+            <label for="screenshot-file">Upload Proof Screenshot</label>
+            <input type="file" id="screenshot-file" accept="image/*" onchange="uploadImageToImgBB(event)">
+            <input type="hidden" id="screenshot-uploaded-url">
+            <div id="upload-status"></div>
+          </div>
+          
+          <!-- Code ভেরিফিকেশন -->
+          <div id="proof-code-block" class="hidden">
+            <label for="submitted-secret-code">Enter Secret Code</label>
+            <input type="text" id="submitted-secret-code" placeholder="Enter the code shown on website">
+          </div>
+        </div>
+
+        <button class="submit-task-btn" id="btn-submit-task" onclick="submitTaskProof()">Submit Proof</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- নিয়মাবলীর পপআপ মোডাল (Rules Popup) -->
+  <div id="rules-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📖 Work Instructions & Rules</h3>
+        <button class="close-btn" onclick="closeRules()">✕</button>
+      </div>
+      <div class="modal-body rules-content">
+        <ol>
+          <li><strong>Task 1 (Monetag Video Ads):</strong> You can watch one video ad every 2 minutes. Daily limit is 50 ads. Completing all 50 ads rewards you with a $0.50 bonus.</li>
+          <li><strong>Task 2 (VIP Task):</strong> You must keep a US VPN active to get verified. Follow guidelines (like logging in, registering, or sharing). Take an screenshot of the action and upload it. Admin reviews and approves it within 24 hours.</li>
+          <li><strong>Task 3 (Code Verification):</strong> Open website, spend minimum 3 seconds and complete minimum 5 to 10 clicks to find a secret activation code. Copy and submit the code immediately. Limit is 1 claim every 10 minutes (maximum 25 per day).</li>
+          <li><strong>Referral System:</strong> Earn $0.50 for every invited member. Earn an extra $5.00 once your invitee's earnings cross $100.</li>
+          <li><strong>Withdrawals:</strong> Minimum withdrawal limit is $30. Request approvals will be processed directly by the admin within 1 to 3 business days.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- বটম নেভিগেশন বার (Bottom App Navigation) -->
+  <footer class="app-navigation">
+    <button class="nav-item active" onclick="switchScreen('screen-dashboard', this)">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-earning', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+      <span>Earning</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-refer', this)">
+      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <span>Referral</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-account', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-4c0-2.66-5.33-4-8-4z"/></svg>
+      <span>Account</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-withdraw', this)">
+      <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      <span>Withdraw</span>
+    </button>
+  </footer>
+
+  <!-- সমস্ত জাভাস্ক্রিপ্ট ফাইল লোড -->
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/upload.js"></script>
+  <script src="assets/js/ads.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
