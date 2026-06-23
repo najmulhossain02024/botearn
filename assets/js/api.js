@@ -1,11 +1,11 @@
-// আপনার ক্লাউডফ্লেয়ার ওয়ার্কারের মূল ডোমেইন বা ইউআরএল
-const API_BASE = "https://earnbot.najmulhossain02024.workers.dev";
+// আপনার সক্রিয় ক্লাউডফ্লেয়ার ওয়ার্কারের সঠিক ডোমেইন ইউআরএল
+const API_BASE = "https://botearn.najmulhossain02024.workers.dev";
 
 /**
  * টেলিগ্রাম মিনি অ্যাপ SDK এবং প্যারামিটার থেকে ডাইনামিক ইউজার আইডি ফিল্টার করা
  */
 function getTelegramId() {
-  // ১. প্রথমে টেলিগ্রাম লাইভ সেশন চেক (WebApp API)
+  // ১. প্রথমে রিয়েল-টাইম টেলিগ্রাম লাইভ সেশন চেক (WebApp API)
   if (
     window.Telegram &&
     window.Telegram.WebApp &&
@@ -22,15 +22,12 @@ function getTelegramId() {
     return tgId;
   }
 
-  // ৩. লোকাল ব্রাউজার টেস্টিং করার জন্য ডামি আইডি (লাইভ অ্যাপে এটি অটোমেটিক কাজ করবে)
+  // ৩. লোকাল ব্রাউজার টেস্টিং করার জন্য ডামি আইডি
   return "123456789"; 
 }
 
 /**
  * গ্লোবাল নেটওয়ার্ক ফেচ ফাংশন (এপিআই রিকোয়েস্ট সহজ করার জন্য)
- * @param {string} endpoint - এপিআই এন্ডপয়েন্ট ইউআরএল
- * @param {string} method - GET, POST, OPTIONS ইত্যাদি
- * @param {object|null} body - ডাটা অবজেক্ট (POST এর ক্ষেত্রে)
  */
 async function apiRequest(endpoint, method = "GET", body = null) {
   const options = {
