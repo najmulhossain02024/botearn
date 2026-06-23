@@ -67,6 +67,10 @@ async function loadUserData() {
       savedPaymentProfileData = JSON.parse(data.user.payment_details);
       renderSavedPaymentInfo();
     }
+
+    // অ্যাপ ওপেন করার সাথে সাথে ডেইলি বোনাসের কাউন্টডাউন টাইমার চেক করা হবে
+    updateDailyBonusTimer(tg_id);
+
   } catch (error) {
     console.error("Load User Data Failed:", error);
   }
@@ -78,6 +82,12 @@ async function claimDailyBonus() {
   try {
     const response = await apiRequest("/api/claim-daily", "POST", { tg_id });
     alert(response.message);
+    
+    // সাকসেসফুল ক্লেম হওয়ার সাথে সাথে লোকাল স্টোরেজে টাইম সেভ করা হচ্ছে
+    localStorage.setItem(`daily_bonus_claim_${tg_id}`, Date.now().toString());
+    
+    // টাইমার স্ক্রিনে সচল এবং ব্যালেন্স রিলোড
+    updateDailyBonusTimer(tg_id);
     loadUserData();
   } catch (e) {
     // Error handled by apiRequest helper
@@ -315,6 +325,41 @@ function copyReferralLink() {
   linkBox.select();
   document.execCommand("copy");
   alert("Referral Link Copied!");
+}
+
+// ২৪ ঘণ্টার ডেইলি বোনাস কাউন্টডাউন টাইমার কন্ট্রোলার
+function updateDailyBonusTimer(tg_id) {
+  const btn = document.getElementById("btn-daily-bonus");
+  if (!btn) return;
+
+  const lastClaim = localStorage.getItem(`daily_bonus_claim_${tg_id}`);
+  if (!lastClaim) {
+    btn.disabled = false;
+    btn.innerText = "Claim $0.10";
+    return;
+  }
+
+  const timePassed = Date.now() - parseInt(lastClaim);
+  const cooldown = 24 * 60 * 60 * 1000; // ২৪ ঘণ্টা মিলি-সেকেন্ডে
+
+  if (timePassed < cooldown) {
+    btn.disabled = true;
+    const timeLeft = cooldown - timePassed;
+
+    const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+    const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+    const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+
+    // বাটনের ওপর কাউন্টডাউন টাইমার টেক্সট প্রদর্শন
+    btn.innerText = `Claimed (Retry in ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')})`;
+
+    // প্রতি সেকেন্ডে রিয়েল-টাইমে রিলোড
+    setTimeout(() => updateDailyBonusTimer(tg_id), 1000);
+  } else {
+    btn.disabled = false;
+    btn.innerText = "Claim $0.10";
+    localStorage.removeItem(`daily_bonus_claim_${tg_id}`);
+  }
 }
 
 // অ্যাপ খোলার সাথে সাথে অটো ডেটা লোড
