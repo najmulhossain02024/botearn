@@ -67,7 +67,27 @@ async function loadUserData() {
       savedPaymentProfileData = JSON.parse(data.user.payment_details);
       renderSavedPaymentInfo();
     }
-
+// উইথড্র হিস্টোরি তালিকা রিয়েল-টাইমে রেন্ডার করা হলো
+    const historyList = document.getElementById("withdrawal-history-list");
+    if (data.withdrawals && data.withdrawals.length > 0) {
+      historyList.innerHTML = ""; // পুরনো ফাকা মেসেজ ডিলিট
+      data.withdrawals.forEach((w) => {
+        // স্ট্যাটাস অনুযায়ী ব্যাজের ব্যাকগ্রাউন্ড কালার নির্ধারণ
+        const statusColor = w.status === "approved" ? "var(--success)" : (w.status === "rejected" ? "var(--error)" : "var(--warning)");
+        const statusText = w.status.toUpperCase();
+        
+        historyList.innerHTML += `
+          <div class="single-task-row" style="margin-bottom: 10px;">
+            <div class="task-info-side">
+              <h4>Withdrawal: $${parseFloat(w.amount).toFixed(2)}</h4>
+              <span style="color: var(--text-secondary); font-weight: normal;">Method: ${w.method.toUpperCase()}</span>
+            </div>
+            <span class="badge" style="background-color: ${statusColor}; color: #fff; padding: 4px 10px;">${statusText}</span>
+          </div>`;
+      });
+    } else {
+      historyList.innerHTML = `<p class="empty-msg">No withdrawals made yet.</p>`;
+    }
     // অ্যাপ ওপেন করার সাথে সাথে ডেইলি বোনাসের কাউন্টডাউন টাইমার চেক করা হবে
     updateDailyBonusTimer(tg_id);
 
