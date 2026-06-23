@@ -1,5 +1,5 @@
-// আপনার সক্রিয় ক্লাউডফ্লেয়ার ওয়ার্কারের সঠিক ডোমেইন ইউআরএল
-const API_BASE = "https://botearn.najmulhossain02024.workers.dev";
+// আপনার ক্লাউডফ্লেয়ার API ওয়ার্কারের (earnbot) সঠিক ডোমেইন ইউআরএল
+const API_BASE = "https://earnbot.najmulhossain02024.workers.dev";
 
 /**
  * টেলিগ্রাম মিনি অ্যাপ SDK এবং প্যারামিটার থেকে ডাইনামিক ইউজার আইডি ফিল্টার করা
