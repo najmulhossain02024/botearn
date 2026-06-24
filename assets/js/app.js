@@ -67,7 +67,7 @@ async function loadUserData() {
       savedPaymentProfileData = JSON.parse(data.user.payment_details);
       renderSavedPaymentInfo();
     }
-// উইথড্র হিস্টোরি তালিকা রিয়েল-টাইমে রেন্ডার করা হলো
+    // উইথড্র হিস্টোরি তালিকা রিয়েল-টাইমে রেন্ডার করা হলো
     const historyList = document.getElementById("withdrawal-history-list");
     if (data.withdrawals && data.withdrawals.length > 0) {
       historyList.innerHTML = ""; // পুরনো ফাকা মেসেজ ডিলিট
@@ -114,7 +114,6 @@ async function claimDailyBonus() {
   }
 }
 
-// টাস্ক ২ এবং ৩ লিস্ট রেন্ডার ও লোড লজিক
 // গ্লোবাল অবজেক্ট টাস্ক ডাটা ক্যাশ রাখার জন্য (স্পেশাল ক্যারেক্টার ক্র্যাশ এড়াতে)
 window.vipTasksCache = {};
 window.codeTasksCache = {};
@@ -214,10 +213,21 @@ function openCodeTaskModal(id) {
   openTaskModal(task.id, 'code', task.title, 'Visit the website, perform 5 to 10 clicks, stay minimum 3 seconds and copy-paste the secret code.', task.link);
 }
 
-// কাজ খোলার পর মোডাল পপআপ প্রদর্শন
+// কাজ খোলার পর মোডাল পপআপ প্রদর্শন (পূর্বের আপলোড করা ছবির ডাটা ও কন্টেন্ট এখানে রিসেট করা হলো)
 function openTaskModal(id, type, title, desc, link) {
   currentActiveTaskId = id;
   currentActiveTaskType = type;
+
+  // ছবির ডাটা এবং ফর্ম ইনপুট সম্পূর্ণ ক্লিয়ার (রিসেট) করা হচ্ছে
+  document.getElementById("screenshot-uploaded-url").value = "";
+  document.getElementById("screenshot-file").value = "";
+  document.getElementById("upload-status").innerText = "";
+  document.getElementById("submitted-secret-code").value = "";
+  
+  const submitBtn = document.getElementById("btn-submit-task");
+  if (submitBtn) {
+    submitBtn.disabled = false;
+  }
 
   document.getElementById("modal-task-title").innerText = title;
   document.getElementById("modal-task-desc").innerText = desc;
@@ -282,7 +292,9 @@ async function submitTaskProof() {
     await apiRequest("/api/submit-code", "POST", { tg_id, task_id: currentActiveTaskId, code_submitted: submittedCode });
   }
 
-  alert("Task submitted successfully!");
+  // সাকসেসফুলি সাবমিট হওয়ার পর সুন্দর কনফার্মেশন পপআপ নোটিশ প্রদর্শন
+  alert("🎉 Task Submitted Successfully!\nYour proof has been sent to the administrator. The reward is added to your Pending Balance.");
+  
   closeTaskModal();
   loadEarningTasks();
 }
