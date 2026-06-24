@@ -115,6 +115,11 @@ async function claimDailyBonus() {
 }
 
 // টাস্ক ২ এবং ৩ লিস্ট রেন্ডার ও লোড লজিক
+// গ্লোবাল অবজেক্ট টাস্ক ডাটা ক্যাশ রাখার জন্য (স্পেশাল ক্যারেক্টার ক্র্যাশ এড়াতে)
+window.vipTasksCache = {};
+window.codeTasksCache = {};
+
+// টাস্ক ২ এবং ৩ লিস্ট রেন্ডার ও লোড লজিক (সর্বোচ্চ ২টি এবং কমপ্লিটেড টাস্ক উধাও করার সিস্টেম)
 async function loadEarningTasks() {
   const tg_id = getTelegramId();
   const vipBox = document.getElementById("vip-tasks-list");
@@ -126,52 +131,87 @@ async function loadEarningTasks() {
   try {
     const data = await apiRequest(`/api/tasks?tg_id=${tg_id}`, "GET");
 
-    // VIP (টাস্ক ২) রেন্ডার
-    if (data.vip.length === 0) {
-      vipBox.innerHTML = "<p class='empty-msg'>No VIP Tasks available.</p>";
-    } else {
-      vipBox.innerHTML = "";
-      data.vip.forEach((task) => {
-        const isDone = data.completed_vip.find(c => c.task_id === task.id);
-        const btnHtml = isDone 
-          ? `<button class="action-btn" style="background-color:gray;" disabled>${isDone.status.toUpperCase()}</button>`
-          : `<button class="action-btn" onclick="openTaskModal(${task.id}, 'vip', '${task.title}', '${task.instructions}', '${task.link}')">Open</button>`;
+    // ক্যাশ ডাটা ক্লিয়ার করা হচ্ছে
+    window.vipTasksCache = {};
+    window.codeTasksCache = {};
 
-        vipBox.innerHTML += `
-          <div class="single-task-row">
-            <div class="task-info-side">
-              <h4>${task.title}</h4>
-              <span>+$${task.reward}</span>
-            </div>
-            ${btnHtml}
-          </div>`;
-      });
-    }
+    // ১. VIP (টাস্ক ২) রেন্ডার - সর্বোচ্চ ২টি এবং কমপ্লিটেড টাস্ক ফিল্টার
+    let vipRenderCount = 0;
+    let vipHtml = "";
 
-    // Code Tasks (টাস্ক ৩) রেন্ডার
-    if (data.code.length === 0) {
-      codeBox.innerHTML = "<p class='empty-msg'>No Code Tasks available.</p>";
-    } else {
-      codeBox.innerHTML = "";
-      data.code.forEach((task) => {
-        const isDone = data.completed_code.find(c => c.task_id === task.id);
-        const btnHtml = isDone 
-          ? `<button class="action-btn" style="background-color:gray;" disabled>CLAIMED</button>`
-          : `<button class="action-btn" onclick="openTaskModal(${task.id}, 'code', '${task.title}', 'Visit the website, perform 5 clicks, stay 3 seconds and copy-paste the code.', '${task.link}')">Open</button>`;
+    data.vip.forEach((task) => {
+      // ক্যাশে সেভ করা হচ্ছে
+      window.vipTasksCache[task.id] = task;
 
-        codeBox.innerHTML += `
-          <div class="single-task-row">
-            <div class="task-info-side">
-              <h4>${task.title}</h4>
-              <span>+$${task.reward}</span>
-            </div>
-            ${btnHtml}
-          </div>`;
-      });
-    }
+      // চেক করুন কাজটি ইউজার আগে করেছে কি না
+      const isDone = data.completed_vip.find(c => c.task_id === task.id);
+      
+      // কাজটি করা থাকলে লিস্ট থেকে সম্পূর্ণ উধাও (Skip) করে দেবে
+      if (isDone) return;
+
+      // তালিকায় সর্বোচ্চ ২টি দেখাবে
+      if (vipRenderCount >= 2) return;
+
+      vipHtml += `
+        <div class="single-task-row">
+          <div class="task-info-side">
+            <h4>${task.title}</h4>
+            <span>+$${task.reward}</span>
+          </div>
+          <button class="action-btn" onclick="openVipTaskModal(${task.id})">Open</button>
+        </div>`;
+      vipRenderCount++;
+    });
+
+    vipBox.innerHTML = vipHtml || "<p class='empty-msg'>No VIP Tasks available.</p>";
+
+    // ২. Code Tasks (টাস্ক ৩) রেন্ডার - সর্বোচ্চ ২টি এবং কমপ্লিটেড টাস্ক ফিল্টার
+    let codeRenderCount = 0;
+    let codeHtml = "";
+
+    data.code.forEach((task) => {
+      // ক্যাশে সেভ করা হচ্ছে
+      window.codeTasksCache[task.id] = task;
+
+      // চেক করুন কোডটি আগে সাবমিট করা হয়েছে কি না
+      const isDone = data.completed_code.find(c => c.task_id === task.id);
+      
+      // কাজটি করা থাকলে লিস্ট থেকে সম্পূর্ণ উধাও (Skip) করে দেবে
+      if (isDone) return;
+
+      // তালিকায় সর্বোচ্চ ২টি দেখাবে
+      if (codeRenderCount >= 2) return;
+
+      codeHtml += `
+        <div class="single-task-row">
+          <div class="task-info-side">
+            <h4>${task.title}</h4>
+            <span>+$${task.reward}</span>
+          </div>
+          <button class="action-btn" onclick="openCodeTaskModal(${task.id})">Open</button>
+        </div>`;
+      codeRenderCount++;
+    });
+
+    codeBox.innerHTML = codeHtml || "<p class='empty-msg'>No Code Tasks available.</p>";
+
   } catch (error) {
     console.error("Error loading tasks:", error);
   }
+}
+
+// VIP টাস্ক ওপেন করার নিরাপদ ডাইনামিক হেল্পার (ক্র্যাশ প্রতিরোধক)
+function openVipTaskModal(id) {
+  const task = window.vipTasksCache[id];
+  if (!task) return;
+  openTaskModal(task.id, 'vip', task.title, task.instructions, task.link);
+}
+
+// Code টাস্ক ওপেন করার নিরাপদ ডাইনামিক হেল্পার (ক্র্যাশ প্রতিরোধক)
+function openCodeTaskModal(id) {
+  const task = window.codeTasksCache[id];
+  if (!task) return;
+  openTaskModal(task.id, 'code', task.title, 'Visit the website, perform 5 to 10 clicks, stay minimum 3 seconds and copy-paste the secret code.', task.link);
 }
 
 // কাজ খোলার পর মোডাল পপআপ প্রদর্শন
