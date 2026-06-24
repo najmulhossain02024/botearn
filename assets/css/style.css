@@ -570,3 +570,31 @@ select:focus, input:focus {
   font-size: 12px;
   padding: 15px;
 }
+/* --- টাস্ক সাবমিশন মোডাল ইনপুট ও বাটনের মাঝে প্রফেশনাল গ্যাপ --- */
+.proof-container {
+  margin-bottom: 25px; /* ইনপুট বক্স এবং সাবমিট বাটনের মাঝে নিখুঁত দূরত্ব */
+}
+
+#proof-screenshot-block input[type="file"],
+#proof-code-block input[type="text"] {
+  margin-top: 8px;
+  margin-bottom: 5px;
+}
+
+#upload-status {
+  font-size: 13px;
+  margin-top: 8px;
+  font-weight: 500;
+  display: block;
+}
+
+.submit-task-btn {
+  margin-top: 5px;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25); /* বাটনের নিচে হালকা গ্লো ইফেক্ট */
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+/* বাটনে ক্লিক করার সময় স্মুথ অ্যানিমেশন */
+.submit-task-btn:active {
+  transform: scale(0.98); 
+}
